@@ -108,6 +108,7 @@ type ExposeOptions struct {
 	EnableTls                bool
 	TlsCredentials           string
 	PublishNotReadyAddresses bool
+	Namespace                string
 }
 
 func SkupperNotInstalledError(namespace string) error {
@@ -201,7 +202,7 @@ func expose(cli types.VanClientInterface, ctx context.Context, targetType string
 			if targetType != "statefulset" {
 				return "", fmt.Errorf("The headless option is only supported for statefulsets")
 			}
-			service, err = cli.GetHeadlessServiceConfiguration(targetName, options.Protocol, options.Address, options.Ports, options.PublishNotReadyAddresses)
+			service, err = cli.GetHeadlessServiceConfiguration(targetName, options.Protocol, options.Address, options.Ports, options.PublishNotReadyAddresses, options.Namespace)
 			if err != nil {
 				return "", err
 			}
@@ -224,6 +225,7 @@ func expose(cli types.VanClientInterface, ctx context.Context, targetType string
 				EnableTls:                options.EnableTls,
 				TlsCredentials:           options.TlsCredentials,
 				PublishNotReadyAddresses: options.PublishNotReadyAddresses,
+				Namespace:                options.Namespace,
 			}
 		}
 	} else if service.Headless != nil {
@@ -624,6 +626,7 @@ func NewCmdCreateService(skupperClient SkupperServiceClient) *cobra.Command {
 	cmd.Flags().BoolVar(&serviceToCreate.EventChannel, "event-channel", false, "If specified, this service will be a channel for multicast events.")
 	cmd.Flags().BoolVar(&serviceToCreate.EnableTls, "enable-tls", false, "If specified, the service communication will be encrypted using TLS")
 	cmd.Flags().StringVar(&serviceToCreate.Protocol, "mapping", "tcp", "The mapping in use for this service address (currently one of tcp or http)")
+	cmd.Flags().StringVar(&serviceToCreate.Namespace, "namespace", "", "Expose resources from a specific namespace")
 
 	f := cmd.Flag("mapping")
 	f.Deprecated = "protocol is now the flag to set the mapping"

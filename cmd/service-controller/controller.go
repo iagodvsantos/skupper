@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	jsonencoding "encoding/json"
 	"fmt"
+	"github.com/skupperproject/skupper/pkg/utils"
 	"log"
 	"os"
 	"strings"
@@ -875,8 +876,8 @@ func (c *Controller) handleRemovingTlsSupport(tlsCredentials string) error {
 	return nil
 }
 
-func (c *Controller) NewTargetResolver(address string, selector string, skipTargetStatus bool) (service.TargetResolver, error) {
-	resolver := kube.NewPodTargetResolver(c.vanClient.KubeClient, c.vanClient.Namespace, address, selector, skipTargetStatus)
+func (c *Controller) NewTargetResolver(address string, selector string, skipTargetStatus bool, namespace string) (service.TargetResolver, error) {
+	resolver := kube.NewPodTargetResolver(c.vanClient.KubeClient, utils.GetOrDefault(namespace, c.vanClient.GetNamespace()), address, selector, skipTargetStatus)
 	resolver.AddEventHandler(c.newEventHandler("targetpods@"+address, FixedKey, PodResourceVersionTest))
 	err := resolver.Start()
 	return resolver, err
