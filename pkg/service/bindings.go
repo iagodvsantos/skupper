@@ -37,7 +37,7 @@ type ServiceIngress interface {
 }
 
 type ServiceBindingContext interface {
-	NewTargetResolver(address string, selector string, skipTargetStatus bool) (TargetResolver, error)
+	NewTargetResolver(address string, selector string, skipTargetStatus bool, namespace string) (TargetResolver, error)
 	NewServiceIngress(def *types.ServiceInterface) ServiceIngress
 }
 
@@ -64,6 +64,7 @@ type ServiceBindings struct {
 	targets                  map[string]*EgressBindings
 	tlsCredentials           string
 	PublishNotReadyAddresses bool
+	Namespace                string
 }
 
 func (s *ServiceBindings) FindLocalTarget() *EgressBindings {
@@ -95,6 +96,7 @@ func (bindings *ServiceBindings) AsServiceInterface() types.ServiceInterface {
 		Origin:                   bindings.origin,
 		TlsCredentials:           bindings.tlsCredentials,
 		PublishNotReadyAddresses: bindings.PublishNotReadyAddresses,
+		Namespace:                bindings.Namespace,
 	}
 }
 
@@ -142,6 +144,7 @@ func NewServiceBindings(required types.ServiceInterface, ports []int, bindingCon
 		targets:                  map[string]*EgressBindings{},
 		tlsCredentials:           required.TlsCredentials,
 		PublishNotReadyAddresses: required.PublishNotReadyAddresses,
+		Namespace:                required.Namespace,
 	}
 	for _, t := range required.Targets {
 		if t.Selector != "" {
@@ -204,6 +207,10 @@ func (bindings *ServiceBindings) Update(required types.ServiceInterface, binding
 
 	if bindings.PublishNotReadyAddresses != required.PublishNotReadyAddresses {
 		bindings.PublishNotReadyAddresses = required.PublishNotReadyAddresses
+	}
+
+	if bindings.Namespace != required.Namespace {
+		bindings.Namespace = required.Namespace
 	}
 
 	hasSkupperSelector := false
@@ -283,7 +290,7 @@ func (sb *ServiceBindings) HeadlessName() string {
 }
 
 func (sb *ServiceBindings) addSelectorTarget(name string, selector string, port map[int]int, controller ServiceBindingContext) error {
-	resolver, err := controller.NewTargetResolver(sb.Address, selector, sb.PublishNotReadyAddresses)
+	resolver, err := controller.NewTargetResolver(sb.Address, selector, sb.PublishNotReadyAddresses, sb.Namespace)
 	sb.targets[selector] = &EgressBindings{
 		name:        name,
 		Selector:    selector,
