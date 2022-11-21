@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/skupperproject/skupper/pkg/utils"
 
 	"github.com/skupperproject/skupper/api/types"
 	"github.com/skupperproject/skupper/pkg/kube"
@@ -60,6 +61,7 @@ func (cli *VanClient) ServiceInterfaceCreate(ctx context.Context, service *types
 				return err
 			}
 
+			service.Namespace = utils.GetOrDefault(service.Namespace, cli.GetNamespace())
 		}
 
 		return updateServiceInterface(service, false, owner, cli)

@@ -26,8 +26,15 @@ func GetTestImage() string {
 
 func int32Ptr(i int32) *int32 { return &i }
 
-func CreateTestJob(ns string, kubeClient kubernetes.Interface, name string, command []string) (*batchv1.Job, error) {
+func CreateTestJobWithEnv(ns string, kubeClient kubernetes.Interface, name string, command []string, env []apiv1.EnvVar) (*batchv1.Job, error) {
+	return createTestJob(ns, kubeClient, name, command, env)
+}
 
+func CreateTestJob(ns string, kubeClient kubernetes.Interface, name string, command []string) (*batchv1.Job, error) {
+	return createTestJob(ns, kubeClient, name, command, []apiv1.EnvVar{})
+}
+
+func createTestJob(ns string, kubeClient kubernetes.Interface, name string, command []string, env []apiv1.EnvVar) (*batchv1.Job, error) {
 	namespace := ns
 	testImage := GetTestImage()
 
@@ -54,9 +61,9 @@ func CreateTestJob(ns string, kubeClient kubernetes.Interface, name string, comm
 							Name:    name,
 							Image:   testImage,
 							Command: command,
-							Env: []apiv1.EnvVar{
+							Env: append([]apiv1.EnvVar{
 								{Name: "JOB", Value: name},
-							},
+							}, env...),
 							ImagePullPolicy: apiv1.PullAlways,
 						},
 					},
