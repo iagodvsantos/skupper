@@ -626,7 +626,7 @@ func NewCmdCreateService(skupperClient SkupperServiceClient) *cobra.Command {
 	cmd.Flags().BoolVar(&serviceToCreate.EventChannel, "event-channel", false, "If specified, this service will be a channel for multicast events.")
 	cmd.Flags().BoolVar(&serviceToCreate.EnableTls, "enable-tls", false, "If specified, the service communication will be encrypted using TLS")
 	cmd.Flags().StringVar(&serviceToCreate.Protocol, "mapping", "tcp", "The mapping in use for this service address (currently one of tcp or http)")
-	cmd.Flags().StringVar(&serviceToCreate.Namespace, "namespace", "", "Expose resources from a specific namespace")
+	cmd.Flags().StringVar(&serviceToCreate.Namespace, "target-namespace", "", "Expose resources from a specific namespace")
 
 	f := cmd.Flag("mapping")
 	f.Deprecated = "protocol is now the flag to set the mapping"
