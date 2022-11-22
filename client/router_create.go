@@ -234,7 +234,7 @@ func (cli *VanClient) GetVanControllerSpec(options types.SiteConfigSpec, van *ty
 	})
 	van.Controller.RoleBindings = roleBindings
 
-	van.Controller.ClusterRoles = cli.ClusterRoles()
+	van.Controller.ClusterRoles = cli.ClusterRoles(options.EnableClusterPermissions)
 	van.Controller.ClusterRoleBindings = ClusterRoleBindings(van.Namespace)
 
 	svctype := corev1.ServiceTypeClusterIP
@@ -426,7 +426,11 @@ func ClusterRoleBindings(namespace string) []*rbacv1.ClusterRoleBinding {
 	return clusterRoleBindings
 }
 
-func (cli *VanClient) ClusterRoles() []*rbacv1.ClusterRole {
+func (cli *VanClient) ClusterRoles(enablePermissions bool) []*rbacv1.ClusterRole {
+	controllerRules := []rbacv1.PolicyRule{}
+	if enablePermissions {
+		controllerRules = cli.getControllerRules()
+	}
 	clusterRoles := []*rbacv1.ClusterRole{}
 	clusterRoles = append(clusterRoles, &rbacv1.ClusterRole{
 		TypeMeta: metav1.TypeMeta{
@@ -446,7 +450,7 @@ func (cli *VanClient) ClusterRoles() []*rbacv1.ClusterRole {
 				APIGroups: []string{""},
 				Resources: []string{"namespaces"},
 				Verbs:     []string{"get"}},
-		}, cli.getControllerRules()...),
+		}, controllerRules...),
 	})
 	return clusterRoles
 }
