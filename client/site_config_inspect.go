@@ -81,6 +81,11 @@ func (cli *VanClient) SiteConfigInspectInNamespace(ctx context.Context, input *c
 	} else {
 		result.Spec.EnableFlowCollector = false
 	}
+	if enableClusterPermissions, ok := siteConfig.Data[SiteConfigClusterPermissionsKey]; ok {
+		result.Spec.EnableClusterPermissions, _ = strconv.ParseBool(enableClusterPermissions)
+	} else {
+		result.Spec.EnableClusterPermissions = false
+	}
 	if createNetworkPolicy, ok := siteConfig.Data[SiteConfigCreateNetworkPolicyKey]; ok {
 		result.Spec.CreateNetworkPolicy, _ = strconv.ParseBool(createNetworkPolicy)
 	} else {

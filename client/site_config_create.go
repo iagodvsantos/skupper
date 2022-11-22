@@ -95,6 +95,7 @@ func (cli *VanClient) SiteConfigCreate(ctx context.Context, spec types.SiteConfi
 			SiteConfigServiceSyncKey:           "true",
 			SiteConfigConsoleKey:               "true",
 			SiteConfigFlowCollectorKey:         "true",
+			SiteConfigClusterPermissionsKey:    "false",
 			SiteConfigRouterConsoleKey:         "false",
 			SiteConfigRouterLoggingKey:         "",
 			SiteConfigConsoleAuthenticationKey: types.ConsoleAuthModeInternal,
@@ -152,8 +153,8 @@ func (cli *VanClient) SiteConfigCreate(ctx context.Context, spec types.SiteConfi
 	if spec.CreateNetworkPolicy {
 		siteConfig.Data[SiteConfigCreateNetworkPolicyKey] = "true"
 	}
-	if !spec.EnableClusterPermissions {
-		siteConfig.Data[SiteConfigClusterPermissionsKey] = "false"
+	if spec.EnableClusterPermissions {
+		siteConfig.Data[SiteConfigClusterPermissionsKey] = "true"
 	}
 	if spec.Router.Logging != nil {
 		siteConfig.Data[SiteConfigRouterLoggingKey] = RouterLogConfigToString(spec.Router.Logging)
