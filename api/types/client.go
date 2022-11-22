@@ -82,31 +82,32 @@ type FlowCollectorOptions struct {
 }
 
 type SiteConfigSpec struct {
-	SkupperName         string
-	SkupperNamespace    string
-	RouterMode          string
-	Routers             int
-	EnableController    bool
-	EnableServiceSync   bool
-	EnableConsole       bool
-	EnableFlowCollector bool
-	AuthMode            string
-	User                string
-	Password            string
-	Ingress             string
-	IngressAnnotations  map[string]string
-	ConsoleIngress      string
-	IngressHost         string
-	Replicas            int32
-	SiteControlled      bool
-	CreateNetworkPolicy bool
-	Annotations         map[string]string
-	Labels              map[string]string
-	Router              RouterOptions
-	Controller          ControllerOptions
-	ConfigSync          ConfigSyncOptions
-	FlowCollector       FlowCollectorOptions
-	Platform            Platform
+	SkupperName              string
+	SkupperNamespace         string
+	RouterMode               string
+	Routers                  int
+	EnableController         bool
+	EnableServiceSync        bool
+	EnableConsole            bool
+	EnableFlowCollector      bool
+	AuthMode                 string
+	User                     string
+	Password                 string
+	Ingress                  string
+	IngressAnnotations       map[string]string
+	ConsoleIngress           string
+	IngressHost              string
+	Replicas                 int32
+	SiteControlled           bool
+	CreateNetworkPolicy      bool
+	Annotations              map[string]string
+	Labels                   map[string]string
+	Router                   RouterOptions
+	Controller               ControllerOptions
+	ConfigSync               ConfigSyncOptions
+	FlowCollector            FlowCollectorOptions
+	Platform                 Platform
+	EnableClusterPermissions bool
 }
 
 const (

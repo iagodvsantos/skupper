@@ -23,6 +23,7 @@ const (
 	SiteConfigIngressHostKey         string = "ingress-host"
 	SiteConfigCreateNetworkPolicyKey string = "create-network-policy"
 	SiteConfigRoutersKey             string = "routers"
+	SiteConfigClusterPermissionsKey  string = "cluster-permissions"
 
 	// console options
 	SiteConfigConsoleKey               string = "console"
@@ -150,6 +151,9 @@ func (cli *VanClient) SiteConfigCreate(ctx context.Context, spec types.SiteConfi
 	}
 	if spec.CreateNetworkPolicy {
 		siteConfig.Data[SiteConfigCreateNetworkPolicyKey] = "true"
+	}
+	if !spec.EnableClusterPermissions {
+		siteConfig.Data[SiteConfigClusterPermissionsKey] = "false"
 	}
 	if spec.Router.Logging != nil {
 		siteConfig.Data[SiteConfigRouterLoggingKey] = RouterLogConfigToString(spec.Router.Logging)
