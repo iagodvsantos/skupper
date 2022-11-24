@@ -161,7 +161,7 @@ func exposeService(app PerformanceApp) error {
 			return fmt.Errorf("error creating skupper service %s - %v", svc.Address, err)
 		}
 		// Binding the service to the deployment
-		err := serverCluster.VanClient.ServiceInterfaceBind(context.Background(), skupperSvc, "deployment", app.Server.Deployment.Name, skupperSvc.Protocol, map[int]int{svc.Port: svc.Port})
+		err := serverCluster.VanClient.ServiceInterfaceBind(context.Background(), skupperSvc, "deployment", app.Server.Deployment.Name, skupperSvc.Protocol, map[int]int{svc.Port: svc.Port}, "")
 		if err != nil {
 			return fmt.Errorf("error binding service %s - %v", svc.Address, err)
 		}
