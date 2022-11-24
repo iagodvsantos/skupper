@@ -414,6 +414,44 @@ func TestNewServiceBindings(t *testing.T) {
 				PublishNotReadyAddresses: true,
 			},
 		},
+		{
+			name: "tcp-service-add-target-with-namespace",
+			service: types.ServiceInterface{
+				Address:  "test",
+				Protocol: "tcp",
+				Ports:    []int{9090},
+				Labels: map[string]string{
+					"app": "new-app",
+				},
+				Targets: []types.ServiceInterfaceTarget{
+					{
+						Name:        "test-target",
+						Selector:    "app=test",
+						TargetPorts: map[int]int{9090: 9090},
+						Service:     "",
+						Namespace:   "another-namespace",
+					},
+				},
+			},
+			expected: &ServiceBindings{
+				protocol:     "tcp",
+				Address:      "test",
+				publicPorts:  []int{9090},
+				ingressPorts: []int{MIN_PORT},
+				Labels: map[string]string{
+					"app": "new-app",
+				},
+				targets: map[string]*EgressBindings{
+					"app=test": {
+						name:        "test-target",
+						Selector:    "app=test",
+						service:     "",
+						egressPorts: map[int]int{9090: 9090},
+						namespace:   "another-namespace",
+					},
+				},
+			},
+		},
 	}
 
 	for _, s := range scenarios {
@@ -444,6 +482,7 @@ func TestNewServiceBindings(t *testing.T) {
 					assert.Assert(t, reflect.DeepEqual(bv.egressPorts, v.egressPorts))
 					assert.Equal(t, bv.Selector, v.Selector)
 					assert.Equal(t, bv.service, v.service)
+					assert.Equal(t, bv.namespace, v.namespace)
 				}
 			}
 			si := b.AsServiceInterface()
@@ -898,6 +937,95 @@ func TestUpdateServiceBindings(t *testing.T) {
 				PublishNotReadyAddresses: true,
 			},
 		},
+		{
+			name: "add target namespace",
+			initial: types.ServiceInterface{
+				Address:  "test",
+				Protocol: "tcp",
+				Ports:    []int{8080},
+				Targets: []types.ServiceInterfaceTarget{
+					{
+						Name:        "target1",
+						Selector:    "app=test",
+						TargetPorts: map[int]int{8080: 9090},
+						Service:     "",
+					},
+				},
+			},
+			update: types.ServiceInterface{
+				Address:  "test",
+				Protocol: "tcp",
+				Ports:    []int{8080},
+				Targets: []types.ServiceInterfaceTarget{
+					{
+						Name:        "target1",
+						Selector:    "app=test",
+						TargetPorts: map[int]int{8080: 9090},
+						Service:     "",
+						Namespace:   "another-namespace",
+					},
+				},
+			},
+			expected: &ServiceBindings{
+				protocol:    "tcp",
+				Address:     "test",
+				publicPorts: []int{8080},
+				targets: map[string]*EgressBindings{
+					"app=test": {
+						name:        "target1",
+						Selector:    "app=test",
+						service:     "",
+						egressPorts: map[int]int{8080: 9090},
+						namespace:   "another-namespace",
+					},
+				},
+			},
+		},
+		{
+			name: "update target namespace",
+			initial: types.ServiceInterface{
+				Address:  "test",
+				Protocol: "tcp",
+				Ports:    []int{8080},
+				Targets: []types.ServiceInterfaceTarget{
+					{
+						Name:        "target1",
+						Selector:    "app=test",
+						TargetPorts: map[int]int{8080: 9090},
+						Service:     "",
+						Namespace:   "another-namespace",
+					},
+				},
+			},
+			update: types.ServiceInterface{
+				Address:  "test",
+				Protocol: "tcp",
+				Ports:    []int{8080},
+				Targets: []types.ServiceInterfaceTarget{
+					{
+						Name:        "target1",
+						Selector:    "app=test",
+						TargetPorts: map[int]int{8080: 9090},
+						Service:     "",
+						Namespace:   "another-another-namespace",
+					},
+				},
+			},
+			expected: &ServiceBindings{
+				protocol:    "tcp",
+				Address:     "test",
+				publicPorts: []int{8080},
+				targets: map[string]*EgressBindings{
+					"app=test": {
+						name:        "target1",
+						Selector:    "app=test",
+						service:     "",
+						egressPorts: map[int]int{8080: 9090},
+						namespace:   "another-another-namespace",
+					},
+				},
+			},
+		},
 	}
 
 	for _, s := range scenarios {
@@ -929,6 +1057,7 @@ func TestUpdateServiceBindings(t *testing.T) {
 					assert.Assert(t, reflect.DeepEqual(bv.egressPorts, v.egressPorts))
 					assert.Equal(t, bv.Selector, v.Selector)
 					assert.Equal(t, bv.service, v.service)
+					assert.Equal(t, bv.namespace, v.namespace)
 				}
 			}
 		})

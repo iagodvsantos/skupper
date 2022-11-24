@@ -473,7 +473,6 @@ type ServiceInterface struct {
 	EnableTls                bool                     `json:"enableTls,omitempty"`
 	TlsCredentials           string                   `json:"tlsCredentials,omitempty"`
 	PublishNotReadyAddresses bool                     `json:"publishNotReadyAddresses,omitempty"`
-	Namespace                string                   `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 }
 
 func (s *ServiceInterface) IsOfLocalOrigin() bool {
@@ -534,6 +533,7 @@ type ServiceInterfaceTarget struct {
 	Selector    string      `json:"selector,omitempty"`
 	TargetPorts map[int]int `json:"targetPorts,omitempty"`
 	Service     string      `json:"service,omitempty"`
+	Namespace   string      `json:"namespace,omitempty"`
 }
 
 type ServiceInterfaceV1 struct {

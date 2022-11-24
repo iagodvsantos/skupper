@@ -78,10 +78,9 @@ var Deployment *appsv1.Deployment = &appsv1.Deployment{
 
 func Run(ctx context.Context, t *testing.T, r base.ClusterTestRunner) {
 	pub1Cluster, _ := r.GetPublicContext(1)
-	service.Namespace = pub1Cluster.Namespace
 
 	defer tearDown(ctx, t, r, pub1Cluster.Namespace)
-	setup(ctx, t, pub1Cluster, service)
+	setup(ctx, t, pub1Cluster, service, pub1Cluster.Namespace)
 	runTests(t, r, service)
 }
 
@@ -89,11 +88,10 @@ func RunForNamespace(ctx context.Context, t *testing.T, r base.ClusterTestRunner
 	pub1Cluster, _ := r.GetPublicContext(1)
 	_, err := kube.NewNamespace(namespace, pub1Cluster.VanClient.KubeClient)
 	assert.Assert(t, err)
-	serviceNs.Namespace = namespace
 
 	defer kube.DeleteNamespace(namespace, pub1Cluster.VanClient.KubeClient)
 	defer tearDown(ctx, t, r, namespace)
-	setup(ctx, t, pub1Cluster, serviceNs)
+	setup(ctx, t, pub1Cluster, serviceNs, namespace)
 	runTests(t, r, serviceNs)
 }
 
@@ -107,8 +105,8 @@ func tearDown(ctx context.Context, t *testing.T, r base.ClusterTestRunner, names
 	_ = pub1Cluster.VanClient.KubeClient.AppsV1().Deployments(namespace).Delete(Deployment.Name, &metav1.DeleteOptions{})
 }
 
-func setup(ctx context.Context, t *testing.T, cluster *base.ClusterContext, svc types.ServiceInterface) {
-	publicDeploymentsClient := cluster.VanClient.KubeClient.AppsV1().Deployments(svc.Namespace)
+func setup(ctx context.Context, t *testing.T, cluster *base.ClusterContext, svc types.ServiceInterface, namespace string) {
+	publicDeploymentsClient := cluster.VanClient.KubeClient.AppsV1().Deployments(namespace)
 
 	fmt.Println("Creating deployment...")
 	result, err := publicDeploymentsClient.Create(Deployment)
@@ -116,7 +114,7 @@ func setup(ctx context.Context, t *testing.T, cluster *base.ClusterContext, svc 
 
 	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 
-	fmt.Printf("Listing deployments in namespace %q:\n", svc.Namespace)
+	fmt.Printf("Listing deployments in namespace %q:\n", namespace)
 	list, err := publicDeploymentsClient.List(metav1.ListOptions{})
 	assert.Assert(t, err)
 
@@ -127,7 +125,7 @@ func setup(ctx context.Context, t *testing.T, cluster *base.ClusterContext, svc 
 	err = cluster.VanClient.ServiceInterfaceCreate(ctx, &svc)
 	assert.Assert(t, err)
 
-	err = cluster.VanClient.ServiceInterfaceBind(ctx, &svc, "deployment", "tcp-go-echo", "tcp", map[int]int{})
+	err = cluster.VanClient.ServiceInterfaceBind(ctx, &svc, "deployment", "tcp-go-echo", "tcp", map[int]int{}, namespace)
 	assert.Assert(t, err)
 }
 
