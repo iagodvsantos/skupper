@@ -111,6 +111,13 @@ type ExposeOptions struct {
 	Namespace                string
 }
 
+type BindOptions struct {
+	TargetPorts              []string
+	Protocol                 string
+	PublishNotReadyAddresses bool
+	Namespace                string
+}
+
 func SkupperNotInstalledError(namespace string) error {
 	return fmt.Errorf("Skupper is not installed in Namespace: '" + namespace + "`")
 
@@ -225,7 +232,6 @@ func expose(cli types.VanClientInterface, ctx context.Context, targetType string
 				EnableTls:                options.EnableTls,
 				TlsCredentials:           options.TlsCredentials,
 				PublishNotReadyAddresses: options.PublishNotReadyAddresses,
-				Namespace:                options.Namespace,
 			}
 		}
 	} else if service.Headless != nil {
@@ -250,7 +256,7 @@ func expose(cli types.VanClientInterface, ctx context.Context, targetType string
 		return "", err
 	}
 
-	err = cli.ServiceInterfaceBind(ctx, service, targetType, targetName, options.Protocol, targetPorts)
+	err = cli.ServiceInterfaceBind(ctx, service, targetType, targetName, options.Protocol, targetPorts, options.Namespace)
 	if errors.IsNotFound(err) {
 		return "", SkupperNotInstalledError(cli.GetNamespace())
 	} else if err != nil {
@@ -626,7 +632,6 @@ func NewCmdCreateService(skupperClient SkupperServiceClient) *cobra.Command {
 	cmd.Flags().BoolVar(&serviceToCreate.EventChannel, "event-channel", false, "If specified, this service will be a channel for multicast events.")
 	cmd.Flags().BoolVar(&serviceToCreate.EnableTls, "enable-tls", false, "If specified, the service communication will be encrypted using TLS")
 	cmd.Flags().StringVar(&serviceToCreate.Protocol, "mapping", "tcp", "The mapping in use for this service address (currently one of tcp or http)")
-	cmd.Flags().StringVar(&serviceToCreate.Namespace, "target-namespace", "", "Expose resources from a specific namespace")
 
 	f := cmd.Flag("mapping")
 	f.Deprecated = "protocol is now the flag to set the mapping"
@@ -649,9 +654,7 @@ func NewCmdDeleteService(skupperClient SkupperServiceClient) *cobra.Command {
 	return cmd
 }
 
-var targetPorts []string
-var protocol string
-var publishNotReadyAddresses bool
+var bindOptions BindOptions
 
 func NewCmdBind(skupperClient SkupperServiceClient) *cobra.Command {
 	cmd := &cobra.Command{
@@ -661,14 +664,14 @@ func NewCmdBind(skupperClient SkupperServiceClient) *cobra.Command {
 		PreRun: skupperClient.NewClient,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			silenceCobra(cmd)
-			if protocol != "" && protocol != "tcp" && protocol != "http" && protocol != "http2" {
-				return fmt.Errorf("%s is not a valid protocol. Choose 'tcp', 'http' or 'http2'.", protocol)
+			if bindOptions.Protocol != "" && bindOptions.Protocol != "tcp" && bindOptions.Protocol != "http" && bindOptions.Protocol != "http2" {
+				return fmt.Errorf("%s is not a valid protocol. Choose 'tcp', 'http' or 'http2'.", bindOptions.Protocol)
 			}
 			return skupperClient.Bind(cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&protocol, "protocol", "", "The protocol to proxy (tcp, http or http2).")
-	cmd.Flags().StringSliceVar(&targetPorts, "target-port", []string{}, "The port the target is listening on (you can also use colon to map source-port to a target-port).")
+	cmd.Flags().StringVar(&bindOptions.Protocol, "protocol", "", "The protocol to proxy (tcp, http or http2).")
+	cmd.Flags().StringSliceVar(&bindOptions.TargetPorts, "target-port", []string{}, "The port the target is listening on (you can also use colon to map source-port to a target-port).")
 	skupperClient.BindFlags(cmd)
 	return cmd
 }
