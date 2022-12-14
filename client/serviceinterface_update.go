@@ -312,6 +312,16 @@ func removeServiceInterfaceTarget(serviceName string, targetName string, deleteI
 	return nil
 }
 
+func validateCrossNamespacePermissions(cli *VanClient, targetNamespace string) error {
+	if targetNamespace != cli.GetNamespace() {
+		clusterRole, err := cli.KubeClient.RbacV1().ClusterRoles().Get(types.ControllerClusterRoleName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+	}
+}
+
 func (cli *VanClient) ServiceInterfaceUnbind(ctx context.Context, targetType string, targetName string, address string, deleteIfNoTargets bool) error {
 	if targetType == "deployment" || targetType == "statefulset" || targetType == "service" {
 		if address == "" {

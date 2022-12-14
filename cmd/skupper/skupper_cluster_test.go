@@ -1005,7 +1005,7 @@ func TestExposeWithCluster(t *testing.T) {
 		_, err = anotherNsDeployments.Create(tcpDeployment)
 		assert.Assert(t, err)
 	}
-	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none"}...)
+	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none", "--enable-cluster-permissions=true"}...)
 
 	for _, tc := range testcases {
 		t.Run(tc.doc, func(t *testing.T) {
@@ -1394,7 +1394,7 @@ func TestBindWithCluster(t *testing.T) {
 		_, err = deploymentAnotherNs.Create(tcpDeployment)
 		assert.Assert(t, err)
 	}
-	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none"}...)
+	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none", "--enable-cluster-permissions=true"}...)
 
 	if *clusterRun {
 		createCmd := NewCmdCreateService(testClient.Service())

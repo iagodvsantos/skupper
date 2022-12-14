@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"os"
 	"sort"
 	"strings"
@@ -63,4 +64,35 @@ func PrintKeyValueMap(entries map[string]string) error {
 	}
 
 	return nil
+}
+
+func containsAllPolicies(elements []rbacv1.PolicyRule, included []rbacv1.PolicyRule) bool {
+	for _, inc := range included {
+		for _, el := range elements {
+			if !containsAllStr(el.Resources, inc.Resources) ||
+				!containsAllStr(el.APIGroups, inc.APIGroups) ||
+				!containsAllStr(el.Verbs, inc.Verbs) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func containsAllStr(elements []string, included []string) bool {
+	for _, inc := range included {
+		if !contains(elements, inc) {
+			return false
+		}
+	}
+	return true
+}
+
+func contains(elements []string, element string) bool {
+	for _, el := range elements {
+		if el == element {
+			return true
+		}
+	}
+	return false
 }
