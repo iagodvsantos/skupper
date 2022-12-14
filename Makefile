@@ -1,9 +1,9 @@
 VERSION := $(shell git describe --tags --dirty=-modified --always)
-SERVICE_CONTROLLER_IMAGE := quay.io/skupper/service-controller
-SITE_CONTROLLER_IMAGE := quay.io/skupper/site-controller
-CONFIG_SYNC_IMAGE := quay.io/skupper/config-sync
-VFLOW_COLLECTOR_IMAGE := quay.io/skupper/vflow-collector
-TEST_IMAGE := quay.io/skupper/skupper-tests
+SERVICE_CONTROLLER_IMAGE := iagodvsantos/service-controller
+SITE_CONTROLLER_IMAGE := iagodvsantos/site-controller
+CONFIG_SYNC_IMAGE := iagodvsantos/config-sync
+VFLOW_COLLECTOR_IMAGE := iagodvsantos/vflow-collector
+TEST_IMAGE := iagodvsantos/skupper-tests
 TEST_BINARIES_FOLDER := ${PWD}/test/integration/bin
 DOCKER := docker
 LDFLAGS := -X github.com/skupperproject/skupper/pkg/version.Version=${VERSION}

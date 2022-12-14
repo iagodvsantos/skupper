@@ -55,6 +55,7 @@ func (s *SkupperKubeSite) Create(cmd *cobra.Command, args []string) error {
 	if routerCreateOpts.Ingress == types.IngressContourHttpProxyString && routerCreateOpts.IngressHost == "" {
 		return fmt.Errorf(`--ingress-host option is required when using "--ingress contour-http-proxy"`)
 	}
+
 	routerCreateOpts.Annotations = asMap(s.kubeInit.annotations)
 	routerCreateOpts.Labels = asMap(initFlags.labels)
 	routerCreateOpts.IngressAnnotations = asMap(s.kubeInit.ingressAnnotations)
@@ -167,7 +168,7 @@ func (s *SkupperKubeSite) CreateFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&routerCreateOpts.ConfigSync.Memory, "config-sync-memory", "", "Memory request for config-sync pods")
 	cmd.Flags().StringVar(&routerCreateOpts.ConfigSync.CpuLimit, "config-sync-cpu-limit", "", "CPU limit for config-sync pods")
 	cmd.Flags().StringVar(&routerCreateOpts.ConfigSync.MemoryLimit, "config-sync-memory-limit", "", "Memory limit for config-sync pods")
-	cmd.Flags().BoolVarP(&routerCreateOpts.EnableClusterPermissions, "enable-cluster-permissions", "", false, "Enable cluster wide permissions")
+	cmd.Flags().BoolVarP(&routerCreateOpts.EnableClusterPermissions, "enable-cluster-permissions", "", false, "Enable cluster wide permissions in order to expose deployments/statefulsets in other namespaces")
 
 	cmd.Flags().StringVar(&routerCreateOpts.FlowCollector.Cpu, "vflow-collector-cpu", "", "CPU request for vFlow collector pods")
 	cmd.Flags().StringVar(&routerCreateOpts.FlowCollector.Memory, "vflow-collector-memory", "", "Memory request for vFlow collector pods")

@@ -277,7 +277,7 @@ func TestRouterCreateDefaults(t *testing.T) {
 
 	isCluster := *clusterRun
 
-	testingCtx, cancelWithTimeout := context.WithTimeout(context.Background(), types.DefaultTimeoutDuration*2)
+	testingCtx, cancelWithTimeout := context.WithTimeout(context.Background(), types.DefaultTimeoutDuration*4)
 	defer cancelWithTimeout()
 
 	for _, c := range testcases {
