@@ -1005,7 +1005,7 @@ func TestExposeWithCluster(t *testing.T) {
 		_, err = anotherNsDeployments.Create(tcpDeployment)
 		assert.Assert(t, err)
 	}
-	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none"}...)
+	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none", "--enable-cluster-permissions=true"}...)
 
 	for _, tc := range testcases {
 		t.Run(tc.doc, func(t *testing.T) {
@@ -1394,7 +1394,7 @@ func TestBindWithCluster(t *testing.T) {
 		_, err = deploymentAnotherNs.Create(tcpDeployment)
 		assert.Assert(t, err)
 	}
-	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none"}...)
+	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none", "--enable-cluster-permissions=true"}...)
 
 	if *clusterRun {
 		createCmd := NewCmdCreateService(testClient.Service())
@@ -1415,6 +1415,8 @@ func TestBindWithCluster(t *testing.T) {
 }
 
 func TestUnbindWithCluster(t *testing.T) {
+	anotherNs := fmt.Sprintf("another-namespace-%s", strings.ToLower(utils.RandomId(4)))
+
 	testcases := []testCase{
 		{
 			doc:             "unbind-test1",
@@ -1440,6 +1442,14 @@ func TestUnbindWithCluster(t *testing.T) {
 			expectedError:   "",
 			realCluster:     true,
 		},
+		{
+			doc:             "unbind-test3",
+			args:            []string{"tcp-go-echo-ns", "deployment", "tcp-go-echo", "--target-namespace", anotherNs},
+			expectedCapture: "",
+			expectedOutput:  "",
+			expectedError:   "",
+			realCluster:     true,
+		},
 	}
 
 	namespace := "cmd-unbind-cluster-test-" + strings.ToLower(utils.RandomId(4))
@@ -1454,11 +1464,18 @@ func TestUnbindWithCluster(t *testing.T) {
 	if c, ok := cli.(*client.VanClient); ok {
 		_, err := kube.NewNamespace(namespace, c.KubeClient)
 		assert.Check(t, err)
+		_, err = kube.NewNamespace(anotherNs, c.KubeClient)
+		assert.Check(t, err)
+		defer kube.DeleteNamespace(anotherNs, c.KubeClient)
 		defer kube.DeleteNamespace(namespace, c.KubeClient)
 
 		// create a target deployment as pre-condition
 		deployments := c.KubeClient.AppsV1().Deployments(namespace)
 		_, err = deployments.Create(tcpDeployment)
+		assert.Assert(t, err)
+
+		anotherDeployments := c.KubeClient.AppsV1().Deployments(anotherNs)
+		_, err = anotherDeployments.Create(tcpDeployment)
 		assert.Assert(t, err)
 	}
 	skupperInit(t, []string{"--router-mode=edge", "--console-ingress=none"}...)
@@ -1468,9 +1485,17 @@ func TestUnbindWithCluster(t *testing.T) {
 		silenceCobra(createCmd)
 		testCommand(t, createCmd, "", "", "", "", "", []string{"tcp-go-echo:9090"}...)
 
+		createCmd = NewCmdCreateService(testClient.Service())
+		silenceCobra(createCmd)
+		testCommand(t, createCmd, "", "", "", "", "", []string{"tcp-go-echo-ns:9090"}...)
+
 		bindCmd := NewCmdBind(testClient.Service())
 		silenceCobra(bindCmd)
 		testCommand(t, bindCmd, "", "", "", "", "", []string{"tcp-go-echo", "deployment", "tcp-go-echo"}...)
+
+		bindCmd = NewCmdBind(testClient.Service())
+		silenceCobra(bindCmd)
+		testCommand(t, bindCmd, "", "", "", "", "", []string{"tcp-go-echo-ns", "deployment", "tcp-go-echo", "--target-namespace", anotherNs}...)
 	}
 
 	for _, tc := range testcases {

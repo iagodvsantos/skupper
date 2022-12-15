@@ -473,6 +473,7 @@ func NewCmdExpose(skupperCli SkupperServiceClient) *cobra.Command {
 }
 
 var unexposeAddress string
+var unexposeNamespace string
 
 func NewCmdUnexpose(skupperCli SkupperServiceClient) *cobra.Command {
 	cmd := &cobra.Command{
@@ -483,6 +484,7 @@ func NewCmdUnexpose(skupperCli SkupperServiceClient) *cobra.Command {
 		RunE:   skupperCli.Unexpose,
 	}
 	cmd.Flags().StringVar(&unexposeAddress, "address", "", "Skupper address the target was exposed as")
+	cmd.Flags().StringVar(&unexposeNamespace, "target-namespace", "", "Target namespace from previously exposed service")
 
 	return cmd
 }
@@ -715,6 +717,8 @@ func parsePortMapping(service *types.ServiceInterface, targetPorts []string) (ma
 	return ports, nil
 }
 
+var unbindNamespace string
+
 func NewCmdUnbind(skupperClient SkupperServiceClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "unbind <service-name> <target-type> <target-name>",
@@ -723,6 +727,9 @@ func NewCmdUnbind(skupperClient SkupperServiceClient) *cobra.Command {
 		PreRun: skupperClient.NewClient,
 		RunE:   skupperClient.Unbind,
 	}
+
+	cmd.Flags().StringVar(&unbindNamespace, "target-namespace", "", "Target namespace from previously binded service")
+
 	return cmd
 }
 
