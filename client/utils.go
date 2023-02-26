@@ -1,15 +1,14 @@
 package client
 
 import (
-<<<<<<< HEAD
-=======
 	"fmt"
 	"hash/crc32"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"os"
 	"sort"
->>>>>>> ecdafd7 (address pr comments)
 	"strings"
+	"text/tabwriter"
+
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 func splitWithEscaping(s string, separator, escape byte) []string {
@@ -42,8 +41,6 @@ func asMap(entries []string) map[string]string {
 	}
 	return result
 }
-<<<<<<< HEAD
-=======
 
 func PrintKeyValueMap(entries map[string]string) error {
 	writer := new(tabwriter.Writer)
@@ -107,4 +104,3 @@ func Contains(elements []uint32, element uint32) bool {
 	}
 	return false
 }
->>>>>>> ecdafd7 (address pr comments)

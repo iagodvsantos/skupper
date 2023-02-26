@@ -49,13 +49,12 @@ type ServiceBindingContext interface {
 }
 
 type EgressBindings struct {
-	name           string
-	Selector       string
-	service        string
-	egressPorts    map[int]int
-	resolver       TargetResolver
-	tlsCredentials string
-	namespace      string
+	name        string
+	Selector    string
+	service     string
+	egressPorts map[int]int
+	resolver    TargetResolver
+	namespace   string
 }
 
 type ServiceBindings struct {
@@ -187,7 +186,7 @@ func NewServiceBindings(required types.ServiceInterface, ports []int, bindingCon
 		if t.Selector != "" {
 			sb.addSelectorTarget(t.Name, t.Selector, getTargetPorts(required, t), t.Namespace, bindingContext)
 		} else if t.Service != "" {
-			sb.addServiceTarget(t.Name, t.Service, getTargetPorts(required, t), t.Namespace, required.TlsCredentials)
+			sb.addServiceTarget(t.Name, t.Service, getTargetPorts(required, t), t.Namespace)
 		}
 	}
 
@@ -257,10 +256,6 @@ func (bindings *ServiceBindings) Update(required types.ServiceInterface, binding
 		bindings.TlsCertAuthority = required.TlsCertAuthority
 	}
 
-	if bindings.Namespace != required.Namespace {
-		bindings.Namespace = required.Namespace
-	}
-
 	hasSkupperSelector := false
 	for _, t := range required.Targets {
 		targetPort := getTargetPorts(required, t)
@@ -282,7 +277,7 @@ func (bindings *ServiceBindings) Update(required types.ServiceInterface, binding
 		} else if t.Service != "" {
 			target := bindings.targets[t.Service]
 			if target == nil {
-				bindings.addServiceTarget(t.Name, t.Service, targetPort, t.Namespace, required.TlsCredentials)
+				bindings.addServiceTarget(t.Name, t.Service, targetPort, t.Namespace)
 			} else {
 				if !reflect.DeepEqual(target.egressPorts, targetPort) {
 					target.egressPorts = targetPort
@@ -381,14 +376,13 @@ func (sb *ServiceBindings) removeSelectorTarget(selector string) {
 	delete(sb.targets, selector)
 }
 
-func (sb *ServiceBindings) addServiceTarget(name string, service string, port map[int]int, namespace string, tlsCredentials string) error {
+func (sb *ServiceBindings) addServiceTarget(name string, service string, port map[int]int, namespace string) error {
 	sb.targets[service] = &EgressBindings{
-		name:           name,
-		service:        service,
-		egressPorts:    port,
-		resolver:       NewNullTargetResolver([]string{service}),
-		tlsCredentials: tlsCredentials,
-		namespace:      namespace,
+		name:        name,
+		service:     service,
+		egressPorts: port,
+		resolver:    NewNullTargetResolver([]string{service}),
+		namespace:   namespace,
 	}
 	return nil
 }
